@@ -1,21 +1,21 @@
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
-
-export const metadata = {
-  title: "Rambu Pintar (Mobile Dev)",
-  description: "Prototype Mobile View",
-};
+import TopNav from "@/components/TopNav";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className="bg-gray-800 md:bg-gray-100 text-gray-900">
+      <body className="bg-gray-50 text-gray-900">
         
-        <main className="min-h-screen">
+        <TopNav />
+
+        <main className="min-h-screen pb-24 md:pb-10">
           {children}
         </main>
 
-        <BottomNav />
+        <div className="md:hidden">
+            <BottomNav />
+        </div>
 
       </body>
     </html>
