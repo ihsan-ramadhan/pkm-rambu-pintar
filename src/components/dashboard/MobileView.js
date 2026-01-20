@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { MapPin, Trophy, Star, ChevronRight, Lock, User } from "lucide-react";
+import { MapPin, Trophy, Star, ChevronRight, Lock, User, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -16,6 +16,14 @@ export default function MobileView() {
     }
     getUser();
   }, []);
+
+  const handleLogout = async () => {
+    const confirm = window.confirm("Yakin ingin keluar akun?");
+    if (confirm) {
+      await supabase.auth.signOut();
+      window.location.reload();
+    }
+  };
 
   const isLoggedIn = !!user;
   const name = isLoggedIn ? user.user_metadata.full_name : "Tamu";
@@ -33,9 +41,18 @@ export default function MobileView() {
               <p className="text-blue-100 text-xs uppercase tracking-wider mb-1">Selamat Pagi,</p>
               
               {isLoggedIn ? (
-                <h1 className="text-xl font-bold truncate max-w-[200px]">
-                  {loading ? "..." : name}
-                </h1>
+                <div>
+                  <h1 className="text-xl font-bold truncate max-w-[200px]">
+                    {loading ? "..." : name}
+                  </h1>
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-1 text-xs text-blue-200 hover:text-white transition-colors mt-1 active:scale-95"
+                  >
+                    <LogOut size={12} />
+                    <span>Keluar Akun</span>
+                  </button>
+                </div>
               ) : (
                 <Link href="/login" className="group cursor-pointer block">
                    <div className="flex items-center gap-1">
