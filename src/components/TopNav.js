@@ -1,14 +1,16 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, LogIn } from "lucide-react";
-import { useEffect, useState } from "react";
+import { User, LogIn, LogOut, ChevronDown } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function TopNav() {
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     async function getUser() {
@@ -17,7 +19,23 @@ export default function TopNav() {
       setLoading(false);
     }
     getUser();
+
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    const confirm = window.confirm("Yakin ingin keluar akun?");
+    if (confirm) {
+      await supabase.auth.signOut();
+      window.location.reload();
+    }
+  };
 
   const isLoggedIn = !!user;
   const name = isLoggedIn ? user.user_metadata.full_name : "Tamu";
@@ -48,28 +66,46 @@ export default function TopNav() {
           <Link href="/leaderboard" className={navLinkClass("/leaderboard")}>Peringkat</Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
             {loading ? (
                 <div className="flex items-center gap-3 opacity-50">
                     <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
                     <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
                 </div>
             ) : isLoggedIn ? (
-                <div className="flex items-center gap-3 cursor-pointer">
-                    <div className="flex flex-col items-end mr-1">
-                        <span className="text-xs font-bold text-gray-700">{name}</span>
-                        <span className="text-[10px] text-gray-400">{levelText}</span>
-                    </div>
-                    <div className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden relative shadow-sm">
-                       {avatar ? (
-                           <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                       ) : (
-                           <div className="w-full h-full bg-accent flex items-center justify-center text-yellow-900 font-bold">
-                               {initial}
-                           </div>
-                       )}
-                    </div>
-                </div>
+                <>
+                    <button 
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center gap-3 cursor-pointer focus:outline-none p-1 rounded-full hover:bg-gray-50 transition"
+                    >
+                        <div className="flex flex-col items-end mr-1">
+                            <span className="text-xs font-bold text-gray-700">{name}</span>
+                            <span className="text-[10px] text-gray-400">{levelText}</span>
+                        </div>
+                        <div className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden relative shadow-sm">
+                           {avatar ? (
+                               <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                           ) : (
+                               <div className="w-full h-full bg-accent flex items-center justify-center text-yellow-900 font-bold">
+                                   {initial}
+                               </div>
+                           )}
+                        </div>
+                        <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isDropdownOpen && (
+                      <div className="absolute top-14 right-0 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                          <button 
+                            onClick={handleLogout}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer font-medium"
+                          >
+                            <LogOut size={16} />
+                            Keluar Akun
+                          </button>
+                      </div>
+                    )}
+                </>
             ) : (
                 <Link href="/login" className="flex items-center gap-3 group hover:opacity-80 transition cursor-pointer">
                     <div className="flex flex-col items-end mr-1">
