@@ -1,22 +1,18 @@
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
-import TopNav from "@/components/TopNav";
+import ClientLayout from "@/components/ClientLayout";
+
+export const metadata = {
+  title: "Rambu Pintar",
+  description: "Aplikasi Edukasi Lalu Lintas PKM-PI",
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className="bg-gray-50 text-gray-900">
-        
-        <TopNav />
-
-        <main className="min-h-screen pb-24 md:pb-10">
+      <body className="bg-gray-50 text-gray-900 antialiased">
+        <ClientLayout>
           {children}
-        </main>
-
-        <div className="md:hidden">
-            <BottomNav />
-        </div>
-
+        </ClientLayout>
       </body>
     </html>
   );
