@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { MapPin, Trophy, Star, ChevronRight, Lock, User, LogOut, Activity } from "lucide-react";
+import { MapPin, Trophy, Star, ChevronRight, Lock, User, LogOut, Activity, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -9,6 +9,7 @@ export default function MobileView() {
   const [profile, setProfile] = useState(null);
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     async function getData() {
@@ -46,12 +47,13 @@ export default function MobileView() {
     getData();
   }, []);
 
-  const handleLogout = async () => {
-    const confirm = window.confirm("Yakin ingin keluar akun?");
-    if (confirm) {
-      await supabase.auth.signOut();
-      window.location.reload();
-    }
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
   };
 
   const isLoggedIn = !!user;
@@ -79,7 +81,7 @@ export default function MobileView() {
                     {loading ? "..." : name}
                   </h1>
                   <button 
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     className="flex items-center gap-1 text-xs text-blue-200 hover:text-white transition-colors mt-1 active:scale-95"
                   >
                     <LogOut size={12} />
@@ -232,6 +234,37 @@ export default function MobileView() {
           </div>
 
         </div>
+
+        {isLogoutModalOpen && (
+           <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                 <div className="flex flex-col items-center text-center">
+                    <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                       <AlertTriangle size={24} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Keluar Akun?</h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                       Kamu harus login lagi nanti untuk melihat progress dan riwayat scan.
+                    </p>
+                    <div className="flex gap-3 w-full">
+                       <button 
+                          onClick={() => setIsLogoutModalOpen(false)}
+                          className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition active:scale-95 text-sm"
+                       >
+                          Batal
+                       </button>
+                       <button 
+                          onClick={confirmLogout}
+                          className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition active:scale-95 text-sm"
+                       >
+                          Ya, Keluar
+                       </button>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        )}
+
     </div>
   );
 }
