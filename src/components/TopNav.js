@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, LogIn, LogOut, ChevronDown } from "lucide-react";
+import { User, LogIn, LogOut, ChevronDown, AlertTriangle } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -11,6 +11,7 @@ export default function TopNav() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -41,12 +42,14 @@ export default function TopNav() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    const confirm = window.confirm("Yakin ingin keluar akun?");
-    if (confirm) {
-      await supabase.auth.signOut();
-      window.location.reload();
-    }
+  const handleLogoutClick = () => {
+    setIsDropdownOpen(false); 
+    setIsLogoutModalOpen(true); 
+  };
+
+  const confirmLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
   };
 
   const isLoggedIn = !!user;
@@ -64,15 +67,16 @@ export default function TopNav() {
     }`;
 
   return (
-    <nav className="hidden md:block sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="w-full px-6 md:px-10 h-16 flex justify-between items-center">
-        
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-blue-200 shadow-md">
-            R
+    <>
+      <nav className="hidden md:block sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="w-full px-6 md:px-10 h-16 flex justify-between items-center">
+          
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-blue-200 shadow-md">
+              R
+            </div>
+            <span className="font-bold text-xl text-gray-900 tracking-tight">RambuPintar</span>
           </div>
-          <span className="font-bold text-xl text-gray-900 tracking-tight">RambuPintar</span>
-        </div>
 
         <div className="flex items-center gap-8">
           <Link href="/" className={navLinkClass("/")}>Beranda</Link>
@@ -109,34 +113,65 @@ export default function TopNav() {
                         <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {isDropdownOpen && (
-                      <div className="absolute top-14 right-0 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                          <button 
-                            onClick={handleLogout}
-                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer font-medium"
-                          >
-                            <LogOut size={16} />
-                            Keluar Akun
-                          </button>
+                      {isDropdownOpen && (
+                        <div className="absolute top-14 right-0 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                            <button 
+                              onClick={handleLogoutClick}
+                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer font-medium"
+                            >
+                              <LogOut size={16} />
+                              Keluar Akun
+                            </button>
+                        </div>
+                      )}
+                  </>
+              ) : (
+                  <Link href="/login" className="flex items-center gap-3 group hover:opacity-80 transition cursor-pointer">
+                      <div className="flex flex-col items-end mr-1">
+                          <span className="text-xs font-bold text-gray-700">Tamu</span>
+                          <span className="text-[10px] text-primary font-bold flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
+                            Masuk <LogIn size={10} />
+                          </span>
                       </div>
-                    )}
-                </>
-            ) : (
-                <Link href="/login" className="flex items-center gap-3 group hover:opacity-80 transition cursor-pointer">
-                    <div className="flex flex-col items-end mr-1">
-                        <span className="text-xs font-bold text-gray-700">Tamu</span>
-                        <span className="text-[10px] text-primary font-bold flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
-                           Masuk <LogIn size={10} />
-                        </span>
-                    </div>
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 text-gray-400 group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
-                        <User size={20} />
-                    </div>
-                </Link>
-            )}
-        </div>
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 text-gray-400 group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
+                          <User size={20} />
+                      </div>
+                  </Link>
+              )}
+          </div>
 
-      </div>
-    </nav>
+        </div>
+      </nav>
+
+      {isLogoutModalOpen && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                      <AlertTriangle size={24} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Keluar Akun?</h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                      Kamu harus login lagi nanti untuk melihat progress dan riwayat scan.
+                  </p>
+                  <div className="flex gap-3 w-full">
+                      <button 
+                        onClick={() => setIsLogoutModalOpen(false)}
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition active:scale-95 text-sm"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        onClick={confirmLogout}
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition active:scale-95 text-sm"
+                      >
+                        Ya, Keluar
+                      </button>
+                  </div>
+                </div>
+            </div>
+          </div>
+      )}
+    </>
   );
 }
