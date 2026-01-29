@@ -7,6 +7,7 @@ export default function ClientLayout({ children }) {
   const pathname = usePathname();
   
   const isFullScreenPage = pathname === "/login" || pathname === "/auth/error";
+  const isMapPage = pathname === "/peta";
 
   if (isFullScreenPage) {
     return <>{children}</>;
@@ -16,7 +17,7 @@ export default function ClientLayout({ children }) {
     <>
       <TopNav />
       
-      <main className="min-h-screen pb-24 md:pb-10">
+      <main className={isMapPage ? "h-[calc(100vh-4.1rem)] overflow-hidden" : "min-h-screen pb-24 md:pb-10"}>
         {children}
       </main>
 

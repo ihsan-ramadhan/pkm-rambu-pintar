@@ -12,7 +12,7 @@ const Map = dynamic(() => import("@/components/Map"), {
 
 export default function PetaPage() {
   return (
-    <div className="w-full h-[calc(100vh-6rem)] relative z-0">
+    <div className="w-full h-full relative z-0">
        <Map />
     </div>
   );
