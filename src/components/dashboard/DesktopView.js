@@ -9,6 +9,7 @@ export default function DesktopView() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [scans, setScans] = useState([]); 
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +43,14 @@ export default function DesktopView() {
         
         if (scanData) setScans(scanData);
       }
+
+      const { data: topUsers } = await supabase
+        .from('profiles')
+        .select('id, full_name, xp, avatar_url')
+        .order('xp', { ascending: false })
+        .limit(5);
+      
+      if (topUsers) setLeaderboard(topUsers);
       setLoading(false);
     }
     getData();
@@ -53,6 +62,8 @@ export default function DesktopView() {
   const xp = profile?.xp || 0;
   const levelName = profile?.level_name || "Pemula";
   const levelNum = profile?.level_number || 1;
+
+  const getInitial = (str) => str ? str.charAt(0).toUpperCase() : "?";
 
   return (
     <div className="w-full">
@@ -94,9 +105,13 @@ export default function DesktopView() {
                          <Trophy size={20} />
                       </div>
                       <div>
-                         <p className="text-[10px] text-gray-400 font-bold uppercase">Peringkat</p>
+                         <p className="text-[10px] text-gray-400 font-bold uppercase">Peringkat Saya</p>
                          <p className="text-xl font-bold text-gray-900">
-                            {isLoggedIn ? "#-" : "-"}
+                            {isLoggedIn 
+                               ? (leaderboard.findIndex(u => u.id === user?.id) !== -1 
+                                    ? `#${leaderboard.findIndex(u => u.id === user?.id) + 1}` 
+                                    : "-") 
+                               : "-"}
                          </p>
                       </div>
                    </div>
@@ -222,23 +237,37 @@ export default function DesktopView() {
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                      <Trophy size={18} className="text-orange-600" /> Peringkat
                   </h3>
-                   <div className="space-y-4">
-                     <div className="flex items-center justify-between text-sm">
-                        <span className="font-bold text-gray-400">1</span>
-                        <div className="flex items-center gap-2 flex-1 ml-3">
-                           <div className="w-6 h-6 bg-blue-100 rounded-full"></div>
-                           <span className="font-medium">Dilan</span>
-                        </div>
-                        <span className="font-bold text-orange-600">2400</span>
-                     </div>
-                     <div className="flex items-center justify-between text-sm">
-                        <span className="font-bold text-gray-400">2</span>
-                        <div className="flex items-center gap-2 flex-1 ml-3">
-                           <div className="w-6 h-6 bg-pink-100 rounded-full"></div>
-                           <span className="font-medium">Milea</span>
-                        </div>
-                        <span className="font-bold text-orange-600">2150</span>
-                     </div>
+                   
+                  <div className="space-y-4">
+                     {leaderboard.length > 0 ? (
+                       leaderboard.map((u, index) => (
+                         <div key={u.id} className="flex items-center justify-between text-sm">
+                            <span className={`font-bold w-4 text-center ${index === 0 ? 'text-yellow-500 text-lg' : index === 1 ? 'text-gray-400 text-lg' : index === 2 ? 'text-orange-700 text-lg' : 'text-gray-400'}`}>
+                               {index + 1}
+                            </span>
+                            
+                            <div className="flex items-center gap-2 flex-1 ml-3">
+                               <div className="w-8 h-8 bg-gray-100 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center text-[10px] font-bold text-gray-500">
+                                  {u.avatar_url ? (
+                                    <img src={u.avatar_url} alt={u.full_name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    getInitial(u.full_name)
+                                  )}
+                               </div>
+                               <div className="flex flex-col">
+                                  <span className={`truncate max-w-[120px] ${u.id === user?.id ? 'text-primary font-bold' : 'text-gray-700 font-medium'}`}>
+                                     {u.full_name || "Tanpa Nama"}
+                                  </span>
+                               </div>
+                            </div>
+                            <span className="font-bold text-orange-600">{u.xp.toLocaleString()}</span>
+                         </div>
+                       ))
+                     ) : (
+                       <div className="text-center py-4 text-gray-400 text-xs">
+                          Belum ada data peringkat.
+                       </div>
+                     )}
                   </div>
                </div>
             </div>
